@@ -323,6 +323,69 @@ contributors: Gus Caplan
             1. Set _wrapper_.[[AsyncIterated]] to _iteratorRecord_.
             1. Return _wrapper_.
           </emu-alg>
+
+          <emu-clause id="sec-wrapforvalidasynciteratorprototype-object">
+            <h1>The %WrapForValidAsyncIteratorPrototype% Object</h1>
+            <p>The <dfn>%WrapForValidAsyncIteratorPrototype%</dfn> object:</p>
+
+            <ul>
+              <li>is an ordinary object.</li>
+              <li>has a [[Prototype]] internal slot whose value is %AsyncIterator.prototype%.</li>
+              <li>has the following properties:</li>
+            </ul>
+
+            <emu-clause id="sec-wrapforvalidasynciteratorprototype.next">
+              <h1>%WrapForValidAsyncIteratorPrototype%.next ( _value_ )</h1>
+              <emu-alg>
+                1. Let _O_ be *this* value.
+                1. Let _promiseCapability_ be ! NewPromiseCapability(%Promise%).
+                1. Let _check_ be RequireInternalSlot(_O_, [[AsyncIterated]]).
+                1. IfAbruptRejectPromise(_check_, _promiseCapability_).
+                1. If _value_ is not present, then
+                  1. Let _result_ be IteratorNext(_O_.[[AsyncIterated]]).
+                1. Else,
+                  1. Let _result_ be IteratorNext(_O_.[[AsyncIterated]], _value_).
+                1. IfAbruptRejectPromise(_result_, _promiseCapability_).
+                1. Perform ! Call(_promiseCapability_.[[Resolve]], *undefined*, &laquo; _result_ &raquo;).
+                1. Return _promiseCapability_.[[Promise]].
+              </emu-alg>
+            </emu-clause>
+
+            <emu-clause id="sec-wrapforvalidasynciteratorprototype.return">
+              <h1>%WrapForValidAsyncIteratorPrototype%.return ( _v_ )</h1>
+              <emu-alg>
+                1. Let _O_ be *this* value.
+                1. Let _promiseCapability_ be ! NewPromiseCapability(%Promise%).
+                1. Let _check_ be RequireInternalSlot(_O_, [[AsyncIterated]]).
+                1. IfAbruptRejectPromise(_check_, _promiseCapability_).
+                1. Let _result_ be AsyncIteratorClose(_O_.[[AsyncIterated]], NormalCompletion(_v_)).
+                1. IfAbruptRejectPromise(_result_, _promiseCapability_).
+                1. Let _iterResult_ be ! CreateIterResultObject(_result_, *true*).
+                1. Perform ! Call(_promiseCapability_.[[Resolve]], *undefined*, &laquo; _iterResult_ &raquo;).
+                1. Return _promiseCapability_.[[Promise]].
+              </emu-alg>
+            </emu-clause>
+
+            <emu-clause id="sec-wrapforvalidasynciteratorprototype.throw">
+              <h1>%WrapForValidAsyncIteratorPrototype%.throw ( _v_ )</h1>
+              <emu-alg>
+                1. Let _O_ be *this* value.
+                1. Let _promiseCapability_ be ! NewPromiseCapability(%Promise%).
+                1. Let _check_ be RequireInternalSlot(_O_, [[AsyncIterated]]).
+                1. IfAbruptRejectPromise(_check_, _promiseCapability_).
+                1. Let _iterator_ be _O_.[[AsyncIterated]].[[Iterator]].
+                1. Let _throw_ be GetMethod(_iterator_, *"throw"*).
+                1. IfAbruptRejectPromise(_throw_, _promiseCapability_).
+                1. If _throw_ is *undefined*, then
+                  1. Perform ! Call(_promiseCapability_.[[Reject]], *undefined*, &laquo; _v_ &raquo;).
+                  1. Return _promiseCapability_.[[Promise]].
+                1. Let _result_ be Call(_throw_, _iterator_, &laquo; _v_ &raquo;).
+                1. IfAbruptRejectPromise(_result_, _promiseCapability_).
+                1. Perform ! Call(_promiseCapability_.[[Resolve]], *undefined*, &laquo; _result_ &raquo;).
+                1. Return _promiseCapability_.[[Promise]].
+              </emu-alg>
+            </emu-clause>
+          </emu-clause>
         </emu-clause>
       </emu-clause>
     </emu-clause>
